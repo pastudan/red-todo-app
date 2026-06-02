@@ -1,11 +1,16 @@
 import express from 'express'
+import { readFileSync, existsSync } from 'node:fs'
 import { getAllTodos, createTodo, toggleTodo, deleteTodo } from './db.js'
 
 const app = express()
-const PORT = parseInt(process.env.PORT ?? '3000', 10)
+// In dev mode Blend starts the API on API_PORT (default 3001) so it can
+// coexist with the Vite dev server on PORT (DEV_PORT). In prod they merge:
+// Express serves dist/ + /api on a single PORT.
+const PORT = parseInt(process.env.API_PORT ?? process.env.PORT ?? '3000', 10)
 
 app.use(express.json())
-app.use(express.static('public'))
+// Serve Vite build output in production; no-op in dev (Vite serves its own assets)
+app.use(express.static('dist'))
 
 // ── REST API ──────────────────────────────────────────────────────────────────
 
@@ -34,6 +39,17 @@ app.delete('/api/todos/:id', async (req, res) => {
 
 app.get('/health', (req, res) => {
   res.json({ ok: true })
+})
+
+// ── SPA fallback (serve index.html for all non-API routes in prod) ────────────
+// In dev mode this is never hit because Vite handles all non-/api requests.
+app.get('*', (req, res) => {
+  const index = 'dist/index.html'
+  if (existsSync(index)) {
+    res.send(readFileSync(index, 'utf8'))
+  } else {
+    res.status(404).send('Not found — run "npm run build" first')
+  }
 })
 
 app.listen(PORT, '0.0.0.0', () => {
