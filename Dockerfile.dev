@@ -13,9 +13,9 @@
 #
 # Blend catalog config (seed-data.ts):
 #   devImage:          'ghcr.io/blend-apps/blend-dev-red-todo:latest'
-#   devInternalPort:   3000
+#   devInternalPort:   5174
 #   devInstallCommand: 'npm install'
-#   devCommand:        'node server.js'
+#   devCommand:        'npm run dev'
 #
 # Environment variables injected at provision time (by Blend/Fly):
 #   BLEND_FILE_DAEMON_TOKEN  — auth token for blend-file-daemon
@@ -39,7 +39,8 @@ COPY package*.json ./
 RUN npm install
 
 COPY server.js db.js ./
-COPY public/ ./public/
+COPY src/ ./src/
+COPY index.html tsconfig.json vite.config.ts ./
 
 # ── Checkpoint detection hash ─────────────────────────────────────────────────
 # blend-file-daemon /checkpoint compares current lockfiles against this hash
@@ -49,7 +50,7 @@ RUN mkdir -p /opt/blend && sha256sum package-lock.json > /opt/blend/base-deps.ha
 # Data directory (persisted via Fly volume or ephemeral for dev)
 RUN mkdir -p /workspace/data
 
-ENV PORT=3000
+ENV PORT=5174
 ENV DB_PATH=/workspace/data/todos.db
 
-EXPOSE 3000
+EXPOSE 3001 5174

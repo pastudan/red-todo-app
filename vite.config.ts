@@ -15,7 +15,7 @@ export default defineConfig({
     port: DEV_PORT,
     strictPort: true,
     // Accept connections from any host (needed behind a reverse proxy / Docker port mapping)
-    allowedHosts: 'all',
+    allowedHosts: true,
     hmr: DEV_HOST_PORT ? { clientPort: DEV_HOST_PORT } : true,
     proxy: {
       '/api':    { target: `http://localhost:${API_PORT}`, changeOrigin: true },
